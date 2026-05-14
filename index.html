@@ -909,6 +909,8 @@
             animation: spin 1s linear infinite;
             display: inline-block;
         }
+        #login-screen { display: flex; }
+        #app { display: none; }
     </style>
 </head>
 
@@ -955,7 +957,7 @@
         </div>
     </div>
 
-    <div id="app" style="display:flex; width:100%; height:100%; display:none;">
+    <div id="app" style="width:100%; height:100%;">
     <!-- Sidebar -->
     <nav class="sidebar">
         <div style="padding: 1.2rem; display:flex; color:var(--secondary); font-size:1.5rem; margin-bottom:1rem;"><i
@@ -1615,9 +1617,10 @@
             if (session) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
+                showView('dashboard');
+                // Added these to ensure the app functions properly
                 curUser = session;
                 initApp();
-                showView('dashboard');
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('app').style.display = 'none';
