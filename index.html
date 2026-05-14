@@ -910,6 +910,7 @@
             display: inline-block;
         }
         #login-screen { display: flex; }
+        #login-screen .modal { opacity: 1; transform: scale(1); }
         #app { display: none; }
     </style>
 </head>
@@ -1314,6 +1315,7 @@
 
         // ── SIDEBAR NAVIGATION & ROUTING
         function showView(id) {
+            if (!curUser && localStorage.getItem('lm_session')) { curUser = localStorage.getItem('lm_session'); initApp(); }
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             const view = document.getElementById(`view-${id}`);
@@ -1608,19 +1610,12 @@
             document.getElementById('greeting').innerText = `Good morning, ${curUser.split('_')[0]} 👋`;
         }
 
-        window.onload = function() {
-            // Replaced by DOMContentLoaded below
-        };
-        
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             const session = localStorage.getItem('lm_session');
             if (session) {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
                 showView('dashboard');
-                // Added these to ensure the app functions properly
-                curUser = session;
-                initApp();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('app').style.display = 'none';
