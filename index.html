@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalMate - Premium Legal Assistant</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CDNs -->
+    <script src="https://unpkg.com/tesseract.js@v4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #080C0A;
+            --surface: rgba(16, 185, 129, 0.04);
+            --border: rgba(16, 185, 129, 0.12);
+            --primary: #10B981;
+            --primary-glow: rgba(16, 185, 129, 0.25);
+            --secondary: #E8D5A3;
+            --text-main: #F0F0EC;
+            --text-muted: rgba(240, 240, 236, 0.45);
+            --danger: #FF4C6A;
+            --warning: #FFB830;
+            --success: #10B981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .brand,
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+            color: var(--secondary);
+        }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Animated Background */
+        .blobs {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 25s infinite ease-in-out alternate;
+        }
+
+        .b1 {
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .b2 {
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: rgba(232, 213, 163, 0.05);
+            animation-delay: -5s;
+        }
+
+        .b3 {
+            top: 40%;
+            left: 40%;
+            width: 40vw;
+            height: 40vw;
+            background: rgba(6, 95, 70, 0.08);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(5%, 10%) scale(1.1);
+            }
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: var(--surface);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Transitions & Animations */
+        .tr {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Buttons */
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #059669, #10B981, #059669);
+            background-size: 200%;
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            animation: shimmer 2.5s infinite linear;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% center;
+            }
+
+            100% {
+                background-position: -200% center;
+            }
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 28px rgba(16, 185, 129, 0.3);
+            transform: scale(1.02);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.8rem 1.5rem;
+        }
+
+        .btn-outline:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .btn-icon {
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .btn-icon:hover {
+            color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Inputs */
+        input:not([type="checkbox"]):not([type="file"]),
+        select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: 0.25s;
+        }
+
+        input:not([type="checkbox"]):not([type="file"]):focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* App Layout */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 72px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            border-right: 1px solid var(--border);
+            overflow: hidden;
+            background: rgba(8, 12, 10, 0.8);
+            backdrop-filter: blur(24px);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar:hover {
+            width: 220px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.25s;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .nav-item i {
+            min-width: 20px;
+            text-align: center;
+            margin-right: 20px;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .nav-item span {
+            opacity: 0;
+            max-width: 0;
+            transition: opacity 0.2s ease, max-width 0.2s ease;
+        }
+
+        .sidebar:hover .nav-item span {
+            opacity: 1;
+            max-width: 160px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--primary);
+            border-left-color: var(--primary);
+            background: rgba(16, 185, 129, 0.05);
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+
+        .nav-item.active i {
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            margin-left: 72px;
+            padding: 24px 32px;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 3-Col Editor Layout */
+        .editor-layout {
+            display: flex;
+            gap: 1.5rem;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            padding: 0 !important;
+        }
+
+        .editor-col {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .live-panel {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: rgba(8, 12, 10, 0.5);
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 64px;
+                flex-direction: row;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                order: 2;
+            }
+
+            .sidebar:hover {
+                width: 100%;
+            }
+
+            .nav-item {
+                flex: 1;
+                justify-content: center;
+                padding: 0;
+                border-left: none;
+                border-top: 3px solid transparent;
+            }
+
+            .nav-item i {
+                margin: 0;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                border-left-color: transparent;
+                border-top-color: var(--primary);
+            }
+
+            .main-container {
+                order: 1;
+            }
+
+            .editor-layout {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .live-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                height: auto;
+                flex-shrink: 0;
+                overflow: visible;
+            }
+
+            .editor-col {
+                overflow: visible;
+                height: 600px;
+                flex-shrink: 0;
+            }
+        }
+
+        /* Editor Specifics */
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .pill-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pill-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.25s;
+            font-size: 0.85rem;
+        }
+
+        .pill-tab.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .textarea-container {
+            flex: 1;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            resize: none;
+            caret-color: var(--primary);
+        }
+
+        textarea:focus {
+            box-shadow: inset 0 0 0 1px var(--primary-glow);
+        }
+
+        .stats-bar {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ai-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--primary);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .ai-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Live Panel Cards */
+        .card {
+            padding: 1rem;
+            margin-bottom: 0;
+            border-radius: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .card h4 {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .keyword-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(232, 213, 163, 0.15);
+            color: var(--secondary);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 2px;
+            border: 1px solid rgba(232, 213, 163, 0.3);
+        }
+
+        /* Modals & Overlays */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            position: relative;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s;
+            background: #080C0A;
+        }
+
+        .overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--danger);
+        }
+
+        /* Analysis Drawer */
+        .right-drawer {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: -600px;
+            width: 600px;
+            z-index: 150;
+            background: rgba(8, 12, 10, 0.95);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid var(--border);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-drawer.open {
+            right: 0;
+        }
+
+        @media(max-width:600px) {
+            .right-drawer {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        .drawer-head {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        /* Dashboard View */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dash-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .dash-card i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .dash-mid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media(max-width:900px) {
+            .dash-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .dash-mid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin-top: 5px;
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        /* Clause Library */
+        .clause-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media(max-width:900px) {
+            .clause-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .clause-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .clause-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Chat */
+        .chat-fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #059669, #10B981);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+            z-index: 190;
+            transition: 0.25s;
+        }
+
+        .chat-fab:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            display: none;
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 6rem;
+            right: 2rem;
+            width: 360px;
+            height: 540px;
+            z-index: 189;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.4s;
+            background: rgba(8, 12, 10, 0.95);
+        }
+
+        .chat-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-ai {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Utils */
+        .typing::after {
+            content: '|';
+            animation: blink 1s step-start infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .shake {
+            animation: shake 0.4s both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0)
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0)
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0)
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0)
+            }
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toast {
+            background: rgba(8, 12, 10, 0.9);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            animation: slideIn 0.3s forwards, slideOut 0.3s 3s forwards;
+            backdrop-filter: blur(10px);
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        #clause-tooltip {
+            position: absolute;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: var(--primary);
+            border-right-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="blobs">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="overlay" id="login-screen">
+        <div class="modal glass" id="auth-card" style="text-align: center;">
+            <h1 class="brand" style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i
+                    class="fa-solid fa-scale-balanced"></i> LegalMate</h1>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Premium Legal Document Assistant</p>
+            <input type="text" id="auth-user" placeholder="Username" style="margin-bottom: 1rem;">
+            <div style="position:relative; margin-bottom: 1.5rem;">
+                <input type="password" id="auth-pass" placeholder="Password">
+                <i class="fa-solid fa-eye"
+                    style="position:absolute; right:1rem; top:1.2rem; cursor:pointer; color:var(--text-muted);"
+                    onclick="togglePass(this, 'auth-pass')"></i>
+            </div>
+            <button class="btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="handleLogin()">Login /
+                Register</button>
+            <button class="btn-outline" style="width: 100%; border-color:transparent;" onclick="handleGuest()">Continue
+                as Guest</button>
+        </div>
+    </div>
+
+    <!-- Tour Modal -->
+    <div class="overlay" id="tour-modal">
+        <div class="modal glass">
+            <h2 class="heading-font" style="margin-bottom: 1rem;">Welcome to LegalMate</h2>
+            <p style="line-height:1.6; margin-bottom: 1.5rem; color:var(--text-muted);">
+                1. <strong>Dashboard</strong>: View your analysis history & stats.<br>
+                2. <strong>Editor</strong>: Analyze, simplify, and scan docs.<br>
+                3. <strong>Templates & Library</strong>: Pre-built risky clauses.<br>
+                4. <strong>Chat</strong>: AI assistant for quick legal questions.
+            </p>
+            <button class="btn-primary" style="width:100%;"
+                onclick="document.getElementById('tour-modal').classList.remove('active')">Get Started</button>
+        </div>
+    </div>
+
+    <div id="app" style="display:flex; width:100%; height:100%; display:none;">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div style="padding: 1.2rem; display:flex; color:var(--secondary); font-size:1.5rem; margin-bottom:1rem;"><i
+                class="fa-solid fa-scale-balanced" style="margin-left: 2px;"></i></div>
+        <div class="nav-item active" onclick="showView('dashboard')"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showView('editor')"><i class="fa-solid fa-pen-nib"></i> <span>Editor</span></div>
+        <div class="nav-item" onclick="showView('templates')"><i class="fa-solid fa-folder-open"></i> <span>Templates</span>
+        </div>
+        <div class="nav-item" onclick="showView('history')"><i class="fa-solid fa-clock-rotate-left"></i>
+            <span>History</span></div>
+        <div class="nav-item" onclick="showView('clauses')"><i class="fa-solid fa-bookmark"></i> <span>Clause Library</span>
+        </div>
+        <div class="nav-item" onclick="openSettings()"><i class="fa-solid fa-gear"></i> <span>Settings</span></div>
+        <div class="nav-item" style="margin-top:auto; border-top:1px solid var(--border);" onclick="logout()"><i
+                class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span></div>
+    </nav>
+
+    <!-- Main Views Container -->
+    <div class="main-content">
+
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view active">
+            <h1 class="heading-font reveal" style="margin-bottom: 2rem; font-size:2.5rem;" id="greeting">Good morning 👋
+            </h1>
+
+            <div class="dash-grid reveal">
+                <div class="glass dash-card"><i class="fa-regular fa-file-lines"></i>
+                    <div style="font-size:2rem; font-weight:bold;" id="stat-docs">0</div>
+                    <div style="color:var(--text-muted); font-size:0.85rem;">Documents Analyzed</div>
+                </div>
+                <div class="glass dash-card"><i class="fa-solid fa-gauge-high" style="color:var(--warning)"></i>
+                    <div style="font-size:2rem; font-weight:bold;" id="stat-risk">0</div>
+                    <div style="color:var(--text-muted); font-size:0.85rem;">Avg Risk Score</div>
+                </div>
+                <div class="glass dash-card"><i class="fa-solid fa-flag" style="color:var(--danger)"></i>
+                    <div style="font-size:2rem; font-weight:bold;" id="stat-flags">0</div>
+                    <div style="color:var(--text-muted); font-size:0.85rem;">Red Flags Caught</div>
+                </div>
+                <div class="glass dash-card"><i class="fa-regular fa-comments" style="color:var(--secondary)"></i>
+                    <div style="font-size:2rem; font-weight:bold;" id="stat-chat">0</div>
+                    <div style="color:var(--text-muted); font-size:0.85rem;">Chat Messages</div>
+                </div>
+            </div>
+
+            <div class="dash-mid reveal">
+                <div class="glass" style="padding:1.5rem; display:flex; flex-direction:column;">
+                    <h3 style="margin-bottom:1.5rem;">Recent Activity</h3>
+                    <div class="activity-feed" id="activity-feed"></div>
+                </div>
+                <div class="glass" style="padding:1.5rem;">
+                    <h3 style="margin-bottom:1.5rem;">Risk Score History</h3>
+                    <canvas id="risk-chart" style="width:100%; height:250px;"></canvas>
+                </div>
+            </div>
+
+            <div class="dash-mid reveal">
+                <div class="glass"
+                    style="padding:2rem; background:linear-gradient(135deg, rgba(232,213,163,0.1), transparent); border-color:rgba(232,213,163,0.3);">
+                    <h3 style="color:var(--secondary); margin-bottom:1rem;"><i class="fa-solid fa-lightbulb"></i> Legal
+                        Tip of the Day</h3>
+                    <p style="font-size:1.1rem; font-style:italic; line-height:1.6;" id="daily-tip">"Always check who
+                        bears legal costs in dispute clauses. One-sided fee shifting can be extremely dangerous."</p>
+                </div>
+                <div class="glass"
+                    style="padding:2rem; display:flex; flex-direction:column; gap:1rem; justify-content:center;">
+                    <button class="btn-outline" style="width:100%; text-align:left;" onclick="nav('editor')"><i
+                            class="fa-solid fa-file-circle-plus" style="width:30px;"></i> New Document</button>
+                    <button class="btn-outline" style="width:100%; text-align:left;" onclick="nav('templates')"><i
+                            class="fa-solid fa-folder-open" style="width:30px;"></i> Browse Templates</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDITOR VIEW (3-Column Layout part) -->
+        <div id="view-editor" class="view" style="padding:0;">
+            <div class="editor-layout">
+                <!-- Center Editor -->
+                <div class="editor-col">
+                    <div class="editor-header reveal">
+                        <div>
+                            <h2 class="heading-font">Document Editor</h2>
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.2rem;">Analyze, simplify,
+                                and understand your legal documents</p>
+                        </div>
+                        <div class="pill-tabs">
+                            <div class="pill-tab active"><i class="fa-solid fa-pen"></i> Type</div>
+                            <div class="pill-tab" onclick="toggleVoice()"><i class="fa-solid fa-microphone"
+                                    id="voice-icon"></i> Voice</div>
+                            <div class="pill-tab" onclick="document.getElementById('file-upload').click()"><i
+                                    class="fa-solid fa-upload"></i> Upload</div>
+                            <div class="pill-tab" onclick="openCamera()"><i class="fa-solid fa-camera"></i> Scan</div>
+                            <input type="file" id="file-upload" accept=".txt,.png,.jpg,.jpeg" style="display:none;"
+                                onchange="handleFileUpload(event)">
+                        </div>
+                    </div>
+
+                    <div class="progress-bar" id="ocr-progress"
+                        style="height:3px; background:var(--border); display:none; margin-bottom:5px;">
+                        <div style="height:100%; width:0%; background:var(--primary); transition:0.2s;" id="ocr-fill">
+                        </div>
+                    </div>
+
+                    <div class="textarea-container reveal glass">
+                        <textarea id="doc-input" class="code-font" placeholder="Paste document text here..."></textarea>
+                    </div>
+
+                    <div class="stats-bar reveal" id="doc-stats-bar">0 words · ~0 min read · 0 sentences · Readability:
+                        N/A</div>
+
+                    <div class="ai-actions reveal">
+                        <button class="ai-btn" onclick="handleAI('analyze')"><i class="fa-solid fa-bolt"></i>
+                            Analyze</button>
+                        <button class="ai-btn" onclick="handleAI('simplify')"><i
+                                class="fa-solid fa-wand-magic-sparkles"></i> Simplify</button>
+                        <button class="ai-btn" onclick="handleAI('questions')"><i
+                                class="fa-solid fa-circle-question"></i> Questions</button>
+                        <button class="ai-btn" onclick="handleAI('compare')"><i
+                                class="fa-solid fa-scale-unbalanced"></i> Compare NDA</button>
+                        <button class="ai-btn"
+                            style="border-color:var(--border); color:var(--text-main); margin-left:auto;"
+                            onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> Export</button>
+                        <button class="ai-btn" style="border-color:transparent; color:var(--danger);"
+                            onclick="clearDoc()"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+
+                <!-- Right Live Panel -->
+                <div class="live-panel reveal" id="live-panel">
+                    <div class="card">
+                        <h4 style="color:var(--secondary);"><i class="fa-solid fa-heart-pulse"></i> Health Scanner</h4>
+                        <div id="live-scanner-res"
+                            style="font-size:0.85rem; margin-top:0.5rem; color:var(--text-muted);">Start typing to scan
+                            for risky keywords...</div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="color:var(--primary);"><i class="fa-solid fa-chart-simple"></i> Document Stats</h4>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem; line-height:1.6;"
+                            id="live-stats-full">
+                            Words: 0<br>Sentences: 0<br>Paragraphs: 0<br>Readability: N/A
+                        </div>
+                    </div>
+
+                    <div class="card" id="last-analysis-card" style="display:none;">
+                        <h4><i class="fa-solid fa-clock-rotate-left"></i> Last Analysis</h4>
+                        <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem;">
+                            <svg width="60" height="30" viewBox="0 0 60 30">
+                                <path d="M 5 25 A 25 25 0 0 1 55 25" fill="none" stroke="var(--border)"
+                                    stroke-width="5" />
+                                <path id="mini-gauge" d="M 5 25 A 25 25 0 0 1 55 25" fill="none" stroke="var(--primary)"
+                                    stroke-width="5" stroke-dasharray="78" stroke-dashoffset="78"
+                                    style="transition:1s;" />
+                            </svg>
+                            <span id="mini-score"
+                                style="font-size:1.5rem; font-weight:bold; font-family:'Playfair Display';">0</span>
+                        </div>
+                        <div id="mini-banner"
+                            style="font-size:0.8rem; margin-top:0.5rem; padding:4px 8px; border-radius:4px; background:rgba(255,255,255,0.1);">
+                        </div>
+                        <button class="btn-outline"
+                            style="width:100%; padding:0.4rem; font-size:0.8rem; margin-top:1rem;"
+                            onclick="document.getElementById('results-drawer').classList.add('open')">View Full Analysis
+                            ↓</button>
+                    </div>
+
+                    <div class="card" style="margin-top:auto; border-color:var(--secondary);">
+                        <h4 style="color:var(--secondary);"><i class="fa-solid fa-lightbulb"></i> Quick Tip</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem; font-style:italic;"
+                            id="live-tip">"'Sole discretion' clauses heavily favor the party exercising it."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEMPLATES VIEW -->
+        <div id="view-templates" class="view">
+            <h2 class="heading-font reveal" style="margin-bottom: 2rem;">Templates</h2>
+            <div class="dash-grid" id="templates-grid"></div>
+        </div>
+
+        <!-- CLAUSE LIBRARY VIEW -->
+        <div id="view-clauses" class="view">
+            <h2 class="heading-font reveal" style="margin-bottom: 1rem;">Clause Library</h2>
+            <input type="text" id="clause-search" placeholder="Search clauses..."
+                style="max-width:400px; margin-bottom:2rem;" oninput="renderLibrary()">
+            <div class="clause-grid reveal">
+                <div class="clause-col" id="lib-good">
+                    <h3 style="color:var(--success);"><i class="fa-solid fa-check-circle"></i> Standard</h3>
+                </div>
+                <div class="clause-col" id="lib-risk">
+                    <h3 style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Risky</h3>
+                </div>
+                <div class="clause-col" id="lib-neut">
+                    <h3 style="color:var(--secondary);"><i class="fa-solid fa-circle-dot"></i> Neutral</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div id="view-history" class="view">
+            <h2 class="heading-font reveal" style="margin-bottom: 2rem;">Analysis History</h2>
+            <div id="history-container" style="display:flex; flex-direction:column; gap:1.5rem; max-width:800px;"></div>
+        </div>
+    </div>
+    </div> <!-- Close #app -->
+
+    <!-- Right Drawer (Analysis Results) -->
+    <div class="right-drawer glass" id="results-drawer">
+        <div class="drawer-head">
+            <h3 style="color:var(--secondary);"><i class="fa-solid fa-chart-pie"></i> Results</h3>
+            <i class="fa-solid fa-xmark close-btn" style="position:static;"
+                onclick="document.getElementById('results-drawer').classList.remove('open')"></i>
+        </div>
+        <div class="drawer-body" id="drawer-body">
+            <div
+                style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
+                <i class="fa-solid fa-shield-halved" style="font-size:3rem; margin-bottom:1rem;"></i>
+                <p>Run an action to see results.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="overlay" id="settings-modal">
+        <div class="modal glass">
+            <i class="fa-solid fa-xmark close-btn"
+                onclick="document.getElementById('settings-modal').classList.remove('active')"></i>
+            <h2 class="heading-font" style="margin-bottom: 1.5rem;">Settings</h2>
+
+            <label style="font-size:0.85rem; color:var(--text-muted);">Anthropic API Key</label>
+            <div style="position:relative; margin-bottom:1.5rem; margin-top:0.3rem;">
+                <input type="password" id="api-key" placeholder="sk-ant-...">
+                <i class="fa-solid fa-eye" style="position:absolute; right:1rem; top:1.2rem; cursor:pointer;"
+                    onclick="togglePass(this, 'api-key')"></i>
+            </div>
+
+            <div class="glass"
+                style="padding:1rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <div>
+                    <div style="font-weight:500;">Mock Demo Mode</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Use realistic hardcoded data</div>
+                </div>
+                <input type="checkbox" id="mock-mode" style="width:20px; height:20px; accent-color:var(--primary);">
+            </div>
+
+            <label style="font-size:0.85rem; color:var(--text-muted);">Output Language</label>
+            <select id="lang-select" style="margin-top:0.3rem; margin-bottom:2rem; appearance:none;">
+                <option value="English" style="background:var(--bg)">English</option>
+                <option value="Hindi" style="background:var(--bg)">Hindi</option>
+                <option value="Punjabi" style="background:var(--bg)">Punjabi</option>
+            </select>
+
+            <button class="btn-primary" style="width:100%;" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="camera-modal">
+        <div class="modal glass" style="text-align:center;">
+            <i class="fa-solid fa-xmark close-btn" onclick="closeCamera()"></i>
+            <h2 class="heading-font" style="margin-bottom:1rem;">Scan Document</h2>
+            <video id="cam-video" autoplay playsinline
+                style="width:100%; border-radius:8px; background:#000; margin-bottom:1rem;"></video>
+            <canvas id="cam-canvas" style="display:none;"></canvas>
+            <p id="cam-err" style="color:var(--danger); display:none; margin-bottom:1rem;"></p>
+            <button class="btn-primary" onclick="captureCamera()"><i class="fa-solid fa-camera"></i> Capture</button>
+        </div>
+    </div>
+
+    <!-- Floating Tools -->
+    <div id="clause-tooltip" onclick="doExplain()">✨ Explain</div>
+    <div id="cors-banner"
+        style="position:fixed; top:0; left:0; right:0; background:rgba(255,184,48,0.1); border-bottom:1px solid var(--warning); color:var(--warning); text-align:center; padding:0.5rem; z-index:5000; font-size:0.85rem; display:none;">
+        ⚠️ Browser CORS may block API calls — enable Mock Demo Mode in Settings</div>
+
+    <!-- Chat -->
+    <div class="chat-fab" onclick="toggleChat()"><i class="fa-solid fa-message"></i>
+        <div class="chat-badge" id="chat-badge"></div>
+    </div>
+    <div class="chat-panel glass" id="chat-panel">
+        <div
+            style="padding:1rem; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:var(--primary); font-weight:bold;"><i class="fa-solid fa-robot"></i> LegalMate AI</div>
+            <div><button class="btn-icon" onclick="clearChat()"><i class="fa-solid fa-trash"></i></button><button
+                    class="btn-icon" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button></div>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div style="padding:0.5rem; display:flex; gap:0.5rem; overflow-x:auto; scrollbar-width:none;" id="chat-chips">
+            <button class="btn-outline"
+                style="padding:0.4rem 0.8rem; font-size:0.75rem; white-space:nowrap; border-radius:50px;"
+                onclick="fillChat('Is this clause standard?')">Standard?</button>
+            <button class="btn-outline"
+                style="padding:0.4rem 0.8rem; font-size:0.75rem; white-space:nowrap; border-radius:50px;"
+                onclick="fillChat('What are my risks?')">Risks?</button>
+        </div>
+        <div style="padding:1rem; border-top:1px solid var(--border); display:flex; gap:0.5rem;">
+            <input type="text" id="chat-input" placeholder="Ask a question..."
+                onkeypress="if(event.key==='Enter') sendChat()">
+            <button class="btn-primary" style="padding:0.8rem;" onclick="sendChat()"><i
+                    class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Toasts -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ── CONFIG & CONSTANTS
+        const API_URL = "https://api.anthropic.com/v1/messages";
+        const MODEL = "claude-sonnet-4-20250514";
+        const RISKY_WORDS = ['penalty', 'terminate', 'indemnify', 'liquidated', 'sole discretion', 'waive', 'irrevocable', 'perpetual', 'unlimited'];
+        let curUser = null; let isMock = true; let lang = "English"; let typingIvs = [];
+        const SAMPLE = "MUTUAL NON-DISCLOSURE AGREEMENT\n\n1. Definition. \"Confidential Information\" means all information provided by either party, including trade secrets.\n2. Term. The obligations of confidentiality shall continue perpetually.\n3. Remedies. Disclosing party shall be entitled to immediate injunctive relief in its sole discretion without proving damages.";
+
+        // MOCK DATA
+        const M_ANALYZE = { summary: "A mutual NDA with extremely aggressive terms favoring the disclosing party.", riskScore: 82, redFlags: [{ text: "Perpetual term", severity: "High" }, { text: "Injunctive relief without damages", severity: "High" }, { text: "'Sole discretion' clause", severity: "Medium" }], lawyerQuestions: ["Can we cap the term at 3 years?", "Should we require mutual indemnification?", "Can we remove 'sole discretion'?", "What state law governs?", "Are there standard exceptions?"], tone: "Aggressive", keyTakeaways: ["You are bound forever", "High litigation risk", "Needs severe negotiation"], obligations: { yourSide: ["Keep secrets forever", "Submit to injunctions"], theirSide: ["Keep secrets forever"] }, deadlines: ["Perpetual"] };
+
+        // ── AUTH MODULE
+        function handleLogin() {
+            const u = document.getElementById('auth-user').value.trim(), p = document.getElementById('auth-pass').value;
+            if (!u || !p) { document.getElementById('auth-card').classList.add('shake'); setTimeout(() => document.getElementById('auth-card').classList.remove('shake'), 400); return toast("Need credentials", "error"); }
+            let us = JSON.parse(localStorage.getItem('lm_users') || '[]');
+            let e = us.find(x => x.u === u && x.p === p);
+            if (e) logIn(u); else if (!us.find(x => x.u === u)) { us.push({ u, p }); localStorage.setItem('lm_users', JSON.stringify(us)); logIn(u); toast("Registered"); } else { toast("Wrong pass", "error"); document.getElementById('auth-card').classList.add('shake'); setTimeout(() => document.getElementById('auth-card').classList.remove('shake'), 400); }
+        }
+        function handleGuest() { logIn('Guest_' + Math.floor(Math.random() * 1000)); }
+        function logIn(u) { curUser = u; localStorage.setItem('lm_session', u); document.getElementById('login-screen').style.display = 'none'; document.getElementById('app').style.display = 'flex'; if (!localStorage.getItem('lm_welcomed')) { document.getElementById('tour-modal').classList.add('active'); localStorage.setItem('lm_welcomed', '1'); } initApp(); showView('dashboard'); }
+        function logout() { localStorage.removeItem('lm_session'); location.reload(); }
+        function togglePass(i, id) { const el = document.getElementById(id); if (el.type === 'password') { el.type = 'text'; i.classList.replace('fa-eye', 'fa-eye-slash'); } else { el.type = 'password'; i.classList.replace('fa-eye-slash', 'fa-eye'); } }
+
+        // ── STORAGE MODULE
+        function setStore(k, v) { if (curUser) localStorage.setItem(`lm_${k}_${curUser}`, JSON.stringify(v)); }
+        function getStore(k) { return curUser ? JSON.parse(localStorage.getItem(`lm_${k}_${curUser}`) || 'null') : null; }
+
+        // ── ACTIVITY LOGGER
+        function logAction(txt, score = null) {
+            let act = getStore('activity') || []; act.unshift({ txt, ts: Date.now(), score });
+            if (act.length > 8) act.pop(); setStore('activity', act);
+            if (document.getElementById('view-dashboard').classList.contains('active')) renderDash();
+        }
+
+        // ── UI / THEME / ANIMATIONS
+        function toast(m, t = "success") {
+            const c = document.getElementById('toast-container'), d = document.createElement('div'); d.className = 'toast';
+            if (t === 'error') d.style.borderLeftColor = 'var(--danger)';
+            d.innerHTML = `<i class="fa-solid ${t === 'error' ? 'fa-triangle-exclamation' : 'fa-check'}"></i> <span>${m}</span>`;
+            c.appendChild(d); setTimeout(() => d.remove(), 3300);
+        }
+        function startTw(el, txt, spd = 18) {
+            el.classList.add('typing'); let i = 0;
+            const iv = setInterval(() => { if (i < txt.length) { el.innerHTML += txt[i] === '\n' ? '<br>' : txt[i]; i++; } else { clearInterval(iv); el.classList.remove('typing'); } }, spd);
+            typingIvs.push(iv);
+        }
+
+        // ── SIDEBAR NAVIGATION & ROUTING
+        function showView(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const view = document.getElementById(`view-${id}`);
+            if (view) view.classList.add('active');
+            
+            const navItem = document.querySelector(`.nav-item[onclick*="showView('${id}')"]`);
+            if (navItem) navItem.classList.add('active');
+
+            if (id === 'dashboard') renderDash(); else if (id === 'templates') renderTemplates(); else if (id === 'clauses') renderLibrary(); else if (id === 'history') renderHistory();
+            setTimeout(() => obs.disconnect(), 100); setTimeout(() => document.querySelectorAll('.reveal').forEach(el => obs.observe(el)), 150);
+        }
+
+        // ── VIEW: DASHBOARD
+        function renderDash() {
+            const hist = getStore('history') || []; const act = getStore('activity') || []; const chat = getStore('chat') || [];
+            document.getElementById('stat-docs').innerText = hist.length;
+            const avg = hist.length ? Math.round(hist.reduce((s, a) => s + a.s, 0) / hist.length) : 0;
+            document.getElementById('stat-risk').innerText = avg;
+            document.getElementById('stat-flags').innerText = hist.reduce((s, a) => s + (a.fc || 0), 0);
+            document.getElementById('stat-chat').innerText = chat.length;
+
+            const af = document.getElementById('activity-feed');
+            if (!act.length) af.innerHTML = '<p style="color:var(--text-muted);">No activity yet.</p>';
+            else af.innerHTML = act.map(a => `<div class="activity-item"><div class="activity-dot"></div><div><div style="font-size:0.95rem;">${a.txt}</div><div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.3rem;">${new Date(a.ts).toLocaleTimeString()}</div></div></div>`).join('');
+
+            drawChart(hist);
+        }
+
+        // ── FEATURE: RISK CHART (canvas)
+        function drawChart(hist) {
+            const cvs = document.getElementById('risk-chart'); const ctx = cvs.getContext('2d');
+            cvs.width = cvs.parentElement.clientWidth; cvs.height = 250;
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+            if (!hist.length) { ctx.fillStyle = 'rgba(240,240,236,0.45)'; ctx.font = '14px Inter'; ctx.fillText('No data', cvs.width / 2 - 30, 125); return; }
+            const data = hist.slice(0, 5).reverse(); const w = cvs.width / 5; const h = 200;
+            data.forEach((d, i) => {
+                const bh = (d.s / 100) * h; const x = i * w + w / 4; const y = 220 - bh;
+                ctx.fillStyle = d.s >= 70 ? '#FF4C6A' : d.s >= 40 ? '#FFB830' : '#10B981';
+                // Animate rect logic omitted for pure char count, drawing static
+                ctx.fillRect(x, y, w / 2, bh);
+                ctx.fillStyle = '#F0F0EC'; ctx.font = '10px Inter'; ctx.fillText(d.s, x + w / 4 - 8, y - 5);
+                ctx.fillStyle = 'rgba(240,240,236,0.45)'; ctx.fillText('Doc ' + (i + 1), x + w / 4 - 15, 240);
+            });
+        }
+
+        // ── VIEW: TEMPLATES
+        const TEMPS = [
+            { t: "NDA", d: "Aggressive perpetual terms.", txt: SAMPLE },
+            { t: "Rent Agreement", d: "Lease with strict fees.", txt: "1. Rent due 1st. 2. Landlord may enter at sole discretion." },
+            { t: "Freelance", d: "IP transfer.", txt: "All IP transfers. Perpetual non-compete." },
+            { t: "Employment", d: "At-will letter.", txt: "At-will. Employee waives trial." },
+            { t: "Service", d: "B2B terms.", txt: "Liability capped at $1. Indemnify provider." }
+        ];
+        function renderTemplates() {
+            document.getElementById('templates-grid').innerHTML = TEMPS.map(t => `
+                <div class="glass dash-card" style="border-top:2px solid var(--primary); cursor:pointer; transition:0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 0 20px rgba(16,185,129,0.2)';" onmouseout="this.style.transform='none';this.style.boxShadow='none';" onclick="loadTemp('${t.t}')">
+                    <h3 style="color:var(--secondary);">${t.t}</h3><p style="font-size:0.85rem; color:var(--text-muted);">${t.d}</p>
+                    <span style="font-size:0.75rem; color:var(--warning); background:rgba(255,184,48,0.1); padding:2px 6px; border-radius:4px; align-self:flex-start;">⚠️ Risky clauses</span>
+                </div>`).join('');
+        }
+        function loadTemp(t) { document.getElementById('doc-input').value = TEMPS.find(x => x.t === t).txt; handleInp(); nav('editor'); toast("Template loaded"); }
+
+        // ── VIEW: CLAUSE LIBRARY
+        const CLIB = [
+            { t: "Fair Termination", txt: "Either party may terminate with 30 days notice.", type: "good" }, { t: "Standard Liability", txt: "Liability limited to fees paid in last 12 months.", type: "good" },
+            { t: "Perpetual NDA", txt: "Confidentiality survives perpetually.", type: "risk" }, { t: "Sole Discretion", txt: "Company may alter terms at its sole discretion.", type: "risk" },
+            { t: "Governing Law", txt: "Governed by laws of Delaware.", type: "neut" }, { t: "Severability", txt: "If one clause is void, rest remains.", type: "neut" }
+        ];
+        function renderLibrary() {
+            const q = document.getElementById('clause-search').value.toLowerCase();
+            const g = document.getElementById('lib-good'), r = document.getElementById('lib-risk'), n = document.getElementById('lib-neut');
+            g.innerHTML = '<h3 style="color:var(--success); margin-bottom:1rem;"><i class="fa-solid fa-check-circle"></i> Standard</h3>';
+            r.innerHTML = '<h3 style="color:var(--danger); margin-bottom:1rem;"><i class="fa-solid fa-triangle-exclamation"></i> Risky</h3>';
+            n.innerHTML = '<h3 style="color:var(--secondary); margin-bottom:1rem;"><i class="fa-solid fa-circle-dot"></i> Neutral</h3>';
+            CLIB.filter(c => c.t.toLowerCase().includes(q) || c.txt.toLowerCase().includes(q)).forEach(c => {
+                const h = `<div class="glass clause-card" style="border-color:var(--${c.type === 'good' ? 'success' : c.type === 'risk' ? 'danger' : 'secondary'});">
+                    <div style="font-weight:bold;">${c.t}</div><div class="code-font" style="font-size:0.8rem; color:var(--text-muted);">${c.txt}</div>
+                    <button class="btn-outline" style="padding:0.4rem; font-size:0.8rem;" onclick="navigator.clipboard.writeText('${c.txt}'); toast('Copied!')">Copy</button></div>`;
+                if (c.type === 'good') g.innerHTML += h; else if (c.type === 'risk') r.innerHTML += h; else n.innerHTML += h;
+            });
+        }
+
+        // ── VIEW: HISTORY
+        function renderHistory() {
+            const h = getStore('history') || []; const c = document.getElementById('history-container');
+            if (!h.length) { c.innerHTML = '<div class="glass" style="padding:3rem; text-align:center; color:var(--text-muted);">No analyses yet.</div>'; return; }
+            c.innerHTML = h.map((x, i) => `
+                <div class="glass" style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1;">
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">${new Date(x.ts).toLocaleString()}</div>
+                        <div class="code-font" style="font-size:0.9rem; margin-bottom:0.8rem;">${x.p}</div>
+                        <span class="keyword-badge">Score: ${x.s}</span> <span class="keyword-badge">Tone: ${x.tn}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem; margin-left:1rem;">
+                        <button class="btn-primary" style="padding:0.5rem;" onclick="document.getElementById('doc-input').value=getStore('history')[${i}].t; handleInp(); nav('editor');">Restore</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ── INPUT: TEXTAREA, AUTOSAVE, WORD COUNT
+        // ── INPUT: LIVE KEYWORD SCANNER
+        let to;
+        function handleInp() {
+            const val = document.getElementById('doc-input').value;
+            clearTimeout(to); to = setTimeout(() => { setStore('doc', val); scanDoc(val); }, 300);
+        }
+        document.getElementById('doc-input').addEventListener('input', handleInp);
+
+        function scanDoc(txt) {
+            const w = txt.trim().split(/\s+/).filter(x => x).length;
+            const s = txt.split(/[.!?]+/).filter(x => x.trim()).length || 1;
+            const p = txt.split(/\n\n/).filter(x => x.trim()).length || 1;
+            let read = "Simple"; if (w / s > 15) read = "Moderate"; if (w / s > 25) read = "Complex";
+            document.getElementById('doc-stats-bar').innerText = `${w} words · ~${Math.ceil(w / 200)} min read · ${s} sentences · Readability: ${read}`;
+            document.getElementById('live-stats-full').innerHTML = `Words: ${w}<br>Sentences: ${s}<br>Paragraphs: ${p}<br>Avg words/sentence: ${Math.round(w / s)}<br>Readability: ${read}`;
+
+            const low = txt.toLowerCase(); let found = [];
+            RISKY_WORDS.forEach(rw => { if (low.includes(rw)) found.push(rw); });
+            const lr = document.getElementById('live-scanner-res');
+            if (!found.length) lr.innerHTML = `<span style="color:var(--success)"><i class="fa-solid fa-check"></i> Clean</span>`;
+            else lr.innerHTML = `<span style="color:var(--warning)">⚠️ ${found.length} risky keyword${found.length > 1 ? 's' : ''} detected:</span><br>` + found.map(f => `<span class="keyword-badge">${f}</span>`).join(' ');
+        }
+
+        // ── INPUT: VOICE
+        let rec, isRec = false;
+        function toggleVoice() {
+            if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return toast("No mic support", "error");
+            if (!rec) {
+                rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); rec.continuous = true; rec.interimResults = true;
+                rec.onresult = e => {
+                    let f = ''; for (let i = e.resultIndex; i < e.results.length; ++i) if (e.results[i].isFinal) f += e.results[i][0].transcript;
+                    if (f) { document.getElementById('doc-input').value += '\n[Voice]: ' + f.trim(); handleInp(); }
+                };
+            }
+            if (isRec) { rec.stop(); isRec = false; document.getElementById('voice-icon').style.color = ''; }
+            else { rec.start(); isRec = true; document.getElementById('voice-icon').style.color = 'var(--danger)'; }
+        }
+
+        // ── INPUT: FILE UPLOAD + OCR
+        function handleFileUpload(e) {
+            const f = e.target.files[0]; if (!f) return;
+            if (f.type.match('text.*')) { const r = new FileReader(); r.onload = ev => { document.getElementById('doc-input').value = ev.target.result; handleInp(); }; r.readAsText(f); }
+            else if (f.type.match('image.*')) doOCR(f);
+            else if (f.type === 'application/pdf') toast("No PDF support, paste text", "error");
+            e.target.value = '';
+        }
+        async function doOCR(img) {
+            document.getElementById('ocr-progress').style.display = 'block';
+            try {
+                const w = await Tesseract.createWorker({ logger: m => { if (m.status === 'recognizing text') document.getElementById('ocr-fill').style.width = (m.progress * 100) + '%'; } });
+                await w.loadLanguage('eng'); await w.initialize('eng');
+                const { data: { text } } = await w.recognize(img); await w.terminate();
+                document.getElementById('doc-input').value += '\n\n' + text; handleInp(); toast("OCR Done");
+            } catch (e) { toast("OCR Fail", "error"); }
+            setTimeout(() => { document.getElementById('ocr-progress').style.display = 'none'; document.getElementById('ocr-fill').style.width = '0%'; }, 500);
+        }
+
+        // ── INPUT: CAMERA + OCR
+        let cam;
+        async function openCamera() {
+            try { cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); document.getElementById('cam-video').srcObject = cam; document.getElementById('camera-modal').classList.add('active'); }
+            catch (e) { toast("No camera", "error"); }
+        }
+        function closeCamera() { if (cam) { cam.getTracks().forEach(t => t.stop()); cam = null; } document.getElementById('camera-modal').classList.remove('active'); }
+        function captureCamera() {
+            if (!cam) return; const v = document.getElementById('cam-video'), c = document.getElementById('cam-canvas');
+            c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+            closeCamera(); doOCR(c.toDataURL('image/png'));
+        }
+
+        // ── INPUT: CLAUSE SELECTOR
+        document.getElementById('doc-input').addEventListener('mouseup', () => {
+            const ta = document.getElementById('doc-input'); const s = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+            const tt = document.getElementById('clause-tooltip');
+            if (s.length > 10) { tt.style.left = '50%'; tt.style.top = '80px'; tt.style.display = 'block'; tt.dataset.t = s; } else tt.style.display = 'none';
+        });
+        document.addEventListener('mousedown', e => { if (e.target.id !== 'clause-tooltip') document.getElementById('clause-tooltip').style.display = 'none'; });
+
+        // ── API: CLAUDE
+        async function callAPI(p, json = false) {
+            if (isMock) throw new Error("Mock");
+            const k = localStorage.getItem('lm_apikey'); if (!k) throw new Error("No API Key");
+            const r = await fetch(API_URL, {
+                method: 'POST', headers: { 'x-api-key': k, 'anthropic-version': API_VERSION, 'anthropic-cors-bypass': 'true', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: MODEL, max_tokens: 1500, messages: [{ role: 'user', content: p + (lang !== 'English' ? `\nRespond in ${lang}.` : '') }] })
+            });
+            if (!r.ok) throw new Error("API Error"); const t = (await r.json()).content[0].text;
+            return json ? JSON.parse(t.substring(t.indexOf('{'), t.lastIndexOf('}') + 1)) : t;
+        }
+
+        // ── FEATURE: ANALYZE
+        // ── FEATURE: SIMPLIFY
+        // ── FEATURE: QUESTIONS
+        // ── FEATURE: COMPARE NDA
+        async function handleAI(act) {
+            const txt = document.getElementById('doc-input').value.trim(); if (!txt) return toast("No text", "error");
+            const dr = document.getElementById('results-drawer'); dr.classList.add('open');
+            const bd = document.getElementById('drawer-body'); bd.innerHTML = '<div style="text-align:center; margin-top:5rem;"><div class="spinner"></div><p style="margin-top:1rem; color:var(--text-muted);">AI Processing...</p></div>';
+
+            try {
+                if (act === 'analyze') {
+                    let d; try { d = await callAPI(`Analyze: {summary, riskScore 0-100, redFlags[{text, severity High/Medium/Low}], lawyerQuestions[5], tone, keyTakeaways[3], obligations{yourSide[], theirSide[]}, deadlines[]}\nDoc: ${txt}`, true); } catch (e) { d = M_ANALYZE; if (!isMock) throw e; }
+
+                    let h = getStore('history') || []; h.unshift({ t: txt, ts: Date.now(), p: txt.substring(0, 60) + '...', s: d.riskScore, tn: d.tone, fc: d.redFlags.length });
+                    if (h.length > 5) h.pop(); setStore('history', h); logAction('Analyzed Document', d.riskScore);
+
+                    const cl = d.riskScore >= 70 ? 'var(--danger)' : d.riskScore >= 40 ? 'var(--warning)' : 'var(--success)';
+                    // Update mini card
+                    document.getElementById('last-analysis-card').style.display = 'block';
+                    document.getElementById('mini-score').innerText = d.riskScore; document.getElementById('mini-score').style.color = cl;
+                    document.getElementById('mini-gauge').style.stroke = cl; document.getElementById('mini-gauge').style.strokeDashoffset = 78 - (d.riskScore / 100) * 78;
+                    document.getElementById('mini-banner').innerHTML = `<span style="color:${cl}">Tone: ${d.tone}</span>`;
+
+                    bd.innerHTML = `
+                        <div class="glass" style="padding:1rem; border-color:${cl}; background:rgba(${d.riskScore >= 70 ? '255,76,106' : d.riskScore >= 40 ? '255,184,48' : '16,185,129'},0.05); margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-weight:bold;">${d.riskScore >= 70 ? '🔴 High' : d.riskScore >= 40 ? '🟠 Med' : '🟢 Low'} Risk</div>
+                            <div style="font-size:0.85rem;">${d.redFlags.length} Flags</div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem; overflow-x:auto; scrollbar-width:none;">
+                            <div class="pill-tab active">Summary</div><div class="pill-tab">Red Flags</div><div class="pill-tab">Obligations</div>
+                        </div>
+                        <div class="glass" style="padding:1rem; margin-bottom:1rem;"><p class="tw">${escapeHtml(d.summary)}</p></div>
+                        <h4 style="margin-bottom:1rem; color:var(--secondary);">Red Flags</h4>
+                        ${d.redFlags.map(f => `<div class="glass" style="padding:1rem; margin-bottom:0.5rem; border-left:3px solid ${f.severity === 'High' ? 'var(--danger)' : f.severity === 'Medium' ? 'var(--warning)' : 'var(--success)'};"><p class="tw">${escapeHtml(f.text)}</p></div>`).join('') || '<p>None</p>'}
+                    `;
+                } else {
+                    let p = act === 'simplify' ? `Simplify:\n${txt}` : act === 'questions' ? `5 questions:\n${txt}` : `Compare to std NDA:\n${txt}`;
+                    let m = act === 'simplify' ? M_SIMPLIFY : act === 'questions' ? M_QUESTIONS.map(x => '- ' + x).join('\n') : M_COMPARE;
+                    let r; try { r = await callAPI(p); } catch (e) { r = m; if (!isMock) throw e; }
+                    bd.innerHTML = `<h3 style="margin-bottom:1rem; color:var(--secondary); text-transform:capitalize;">${act}</h3><div class="glass" style="padding:1.5rem; white-space:pre-wrap; line-height:1.6;" id="res-t"></div>`;
+                    startTw(document.getElementById('res-t'), r); logAction(`${act.charAt(0).toUpperCase() + act.slice(1)} generated`);
+                }
+                setTimeout(() => { document.querySelectorAll('.tw').forEach(el => { let t = el.innerText; el.innerText = ''; startTw(el, t, 5); }); }, 50);
+            } catch (e) { bd.innerHTML = `<div style="color:var(--danger);">${e.message}</div>`; toast(e.message, "error"); }
+        }
+
+        // ── FEATURE: EXPLAIN CLAUSE
+        async function doExplain() {
+            const t = document.getElementById('clause-tooltip').dataset.t; document.getElementById('clause-tooltip').style.display = 'none';
+            if (!t) return; const bd = document.getElementById('explain-content'); bd.innerHTML = '<div class="spinner"></div>';
+            document.getElementById('explain-modal').classList.add('active');
+            try { let r; try { r = await callAPI(`Explain:\n${t}`); } catch (e) { r = M_EXPLAIN; if (!isMock) throw e; } bd.innerHTML = '<div id="ex-tw"></div>'; startTw(document.getElementById('ex-tw'), r); logAction('Explained clause'); }
+            catch (e) { bd.innerText = e.message; }
+        }
+
+        // ── FEATURE: EXPORT PDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf; if (!jsPDF) return toast("Lib load err", "error");
+            const d = new jsPDF(); d.setFont("helvetica", "bold"); d.setTextColor(16, 185, 129); d.setFontSize(20); d.text("LegalMate Report", 20, 20);
+            d.setFontSize(10); d.setTextColor(100); d.text(`${curUser} | ${new Date().toLocaleDateString()}`, 20, 30);
+            d.setTextColor(0); d.text(d.splitTextToSize(document.getElementById('doc-input').value, 170).slice(0, 30), 20, 40);
+            d.save('LM_Export.pdf'); toast("📥 PDF exported!"); logAction("Exported PDF");
+        }
+
+        // ── CHAT ASSISTANT
+        function toggleChat() { document.getElementById('chat-panel').classList.toggle('active'); document.getElementById('chat-badge').style.display = 'none'; scrollC(); }
+        function scrollC() { const b = document.getElementById('chat-messages'); b.scrollTop = b.scrollHeight; }
+        function appC(t, u) { const d = document.createElement('div'); d.className = `msg ${u ? 'msg-user' : 'msg-ai'}`; document.getElementById('chat-messages').appendChild(d); scrollC(); return d; }
+        function clearChat() { setStore('chat', []); document.getElementById('chat-messages').innerHTML = '<div class="msg msg-ai">Hello!</div>'; }
+        function fillChat(t) { document.getElementById('chat-input').value = t; sendChat(); }
+        async function sendChat() {
+            const i = document.getElementById('chat-input'); const m = i.value.trim(); if (!m) return; i.value = '';
+            appC(m, true); let h = getStore('chat') || []; h.push({ t: m, u: 1 }); setStore('chat', h);
+            const ad = appC('', false); ad.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div>';
+            try {
+                let r; try { r = await callAPI(`Ctx: ${document.getElementById('doc-input').value.substring(0, 1000)}\nQ: ${m}`); } catch (e) { r = M_CHAT; if (!isMock) throw e; }
+                ad.innerHTML = ''; startTw(ad, r); h.push({ t: r, u: 0 }); setStore('chat', h); if (!document.getElementById('chat-panel').classList.contains('active')) document.getElementById('chat-badge').style.display = 'block';
+            }
+            catch (e) { ad.innerText = e.message; }
+        }
+
+        // ── SCROLL REVEAL
+        const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }));
+
+        // ── INIT
+        function openSettings() {
+            document.getElementById('api-key').value = localStorage.getItem('lm_apikey') || '';
+            document.getElementById('mock-mode').checked = isMock; document.getElementById('lang-select').value = lang;
+            document.getElementById('settings-modal').classList.add('active');
+        }
+        function saveSettings() {
+            localStorage.setItem('lm_apikey', document.getElementById('api-key').value);
+            isMock = document.getElementById('mock-mode').checked; localStorage.setItem('lm_mock', isMock ? '1' : '0');
+            lang = document.getElementById('lang-select').value; localStorage.setItem('lm_lang', lang);
+            document.getElementById('cors-banner').style.display = isMock ? 'none' : 'block'; document.getElementById('settings-modal').classList.remove('active'); toast("Settings saved");
+        }
+        function initApp() {
+            isMock = localStorage.getItem('lm_mock') !== '0'; lang = localStorage.getItem('lm_lang') || 'English';
+            document.getElementById('cors-banner').style.display = isMock ? 'none' : 'block';
+            const d = getStore('doc'); document.getElementById('doc-input').value = d || SAMPLE; handleInp();
+            const h = getStore('chat') || []; if (h.length) { document.getElementById('chat-messages').innerHTML = ''; h.forEach(x => appC(x.t, x.u).innerText = x.t); }
+            document.getElementById('greeting').innerText = `Good morning, ${curUser.split('_')[0]} 👋`;
+        }
+
+        window.onload = function() {
+            // Replaced by DOMContentLoaded below
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = localStorage.getItem('lm_session');
+            if (session) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                curUser = session;
+                initApp();
+                showView('dashboard');
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('app').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>
