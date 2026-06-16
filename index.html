@@ -1267,8 +1267,8 @@
 
     <script>
         // ── CONFIG & CONSTANTS
-        const API_URL = "https://api.anthropic.com/v1/messages";
-        const MODEL = "claude-sonnet-4-20250514";
+        const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+        const MODEL = "llama3-8b-8192";
         const RISKY_WORDS = ['penalty', 'terminate', 'indemnify', 'liquidated', 'sole discretion', 'waive', 'irrevocable', 'perpetual', 'unlimited'];
         let curUser = null; let isMock = true; let lang = "English"; let typingIvs = [];
         const SAMPLE = "MUTUAL NON-DISCLOSURE AGREEMENT\n\n1. Definition. \"Confidential Information\" means all information provided by either party, including trade secrets.\n2. Term. The obligations of confidentiality shall continue perpetually.\n3. Remedies. Disclosing party shall be entitled to immediate injunctive relief in its sole discretion without proving damages.";
@@ -1495,17 +1495,26 @@
         document.addEventListener('mousedown', e => { if (e.target.id !== 'clause-tooltip') document.getElementById('clause-tooltip').style.display = 'none'; });
 
         // ── API: CLAUDE
-        async function callAPI(p, json = false) {
-            if (isMock) throw new Error("Mock");
-            const k = localStorage.getItem('lm_apikey'); if (!k) throw new Error("No API Key");
-            const r = await fetch(API_URL, {
-                method: 'POST', headers: { 'x-api-key': k, 'anthropic-version': API_VERSION, 'anthropic-cors-bypass': 'true', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model: MODEL, max_tokens: 1500, messages: [{ role: 'user', content: p + (lang !== 'English' ? `\nRespond in ${lang}.` : '') }] })
-            });
-            if (!r.ok) throw new Error("API Error"); const t = (await r.json()).content[0].text;
-            return json ? JSON.parse(t.substring(t.indexOf('{'), t.lastIndexOf('}') + 1)) : t;
-        }
-
+       async function callAPI(p, json = false) {
+    if (isMock) throw new Error("Mock");
+    const k = localStorage.getItem('lm_apikey'); 
+    if (!k) throw new Error("No API Key");
+    const r = await fetch(API_URL, {
+        method: 'POST', 
+        headers: { 
+            'Authorization': `Bearer ${k}`, 
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+            model: MODEL, 
+            max_tokens: 1500, 
+            messages: [{ role: 'user', content: p + (lang !== 'English' ? `\nRespond in ${lang}.` : '') }] 
+        })
+    });
+    if (!r.ok) throw new Error("API Error"); 
+    const t = (await r.json()).choices[0].message.content;
+    return json ? JSON.parse(t.substring(t.indexOf('{'), t.lastIndexOf('}') + 1)) : t;
+}
         // ── FEATURE: ANALYZE
         // ── FEATURE: SIMPLIFY
         // ── FEATURE: QUESTIONS
