@@ -1270,12 +1270,16 @@
         const API_URL = "https://api.groq.com/openai/v1/chat/completions";
         const MODEL = "llama-3.3-70b-versatile";
         const RISKY_WORDS = ['penalty', 'terminate', 'indemnify', 'liquidated', 'sole discretion', 'waive', 'irrevocable', 'perpetual', 'unlimited'];
-        let curUser = null; let isMock = true; let lang = "English"; let typingIvs = [];
+        let curUser = null; let isMock = false; let lang = "English"; let typingIvs = [];
         const SAMPLE = "MUTUAL NON-DISCLOSURE AGREEMENT\n\n1. Definition. \"Confidential Information\" means all information provided by either party, including trade secrets.\n2. Term. The obligations of confidentiality shall continue perpetually.\n3. Remedies. Disclosing party shall be entitled to immediate injunctive relief in its sole discretion without proving damages.";
 
         // MOCK DATA
         const M_ANALYZE = { summary: "A mutual NDA with extremely aggressive terms favoring the disclosing party.", riskScore: 82, redFlags: [{ text: "Perpetual term", severity: "High" }, { text: "Injunctive relief without damages", severity: "High" }, { text: "'Sole discretion' clause", severity: "Medium" }], lawyerQuestions: ["Can we cap the term at 3 years?", "Should we require mutual indemnification?", "Can we remove 'sole discretion'?", "What state law governs?", "Are there standard exceptions?"], tone: "Aggressive", keyTakeaways: ["You are bound forever", "High litigation risk", "Needs severe negotiation"], obligations: { yourSide: ["Keep secrets forever", "Submit to injunctions"], theirSide: ["Keep secrets forever"] }, deadlines: ["Perpetual"] };
-
+        const M_SIMPLIFY = "Unable to simplify in demo mode. Please add your Groq API key in Settings.";
+        const M_QUESTIONS = ["Please add your Groq API key in Settings to generate questions."];
+        const M_COMPARE = "Please add your Groq API key in Settings to compare documents.";
+        const M_EXPLAIN = "Please add your Groq API key in Settings to explain clauses.";
+        const M_CHAT = "Please add your Groq API key in Settings to use the chat assistant.";
         // ── AUTH MODULE
         function handleLogin() {
             const u = document.getElementById('auth-user').value.trim(), p = document.getElementById('auth-pass').value;
@@ -1516,7 +1520,7 @@
 
             try {
                 if (act === 'analyze') {
-                    let d; try { d = await callAPI(`Analyze: {summary, riskScore 0-100, redFlags[{text, severity High/Medium/Low}], lawyerQuestions[5], tone, keyTakeaways[3], obligations{yourSide[], theirSide[]}, deadlines[]}\nDoc: ${txt}`, true); } catch (e) { d = M_ANALYZE; if (!isMock) throw e; }
+                let d; try { d = await callAPI(`Respond ONLY with a valid JSON object, no explanation, no markdown, no backticks. Format: {"summary":"...","riskScore":0-100,"redFlags":[{"text":"...","severity":"High/Medium/Low"}],"lawyerQuestions":["..."],"tone":"...","keyTakeaways":["..."],"obligations":{"yourSide":["..."],"theirSide":["..."]},"deadlines":["..."]}\nDoc: ${txt}`, true); } catch (e) { d = M_ANALYZE; if (!isMock) throw e; }
 
                     let h = getStore('history') || []; h.unshift({ t: txt, ts: Date.now(), p: txt.substring(0, 60) + '...', s: d.riskScore, tn: d.tone, fc: d.redFlags.length });
                     if (h.length > 5) h.pop(); setStore('history', h); logAction('Analyzed Document', d.riskScore);
