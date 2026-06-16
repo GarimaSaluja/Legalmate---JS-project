@@ -1504,11 +1504,15 @@
     const k = localStorage.getItem('lm_apikey'); if (!k) throw new Error("No API Key");
     const r = await fetch(API_URL, {
         method: 'POST', headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: MODEL, max_tokens: 1500, messages: [{ role: 'user', content: p + (lang !== 'English' ? `\nRespond in ${lang}.` : '') }] })
+        body: JSON.stringify({ model: MODEL, max_tokens: 2048, messages: [{ role: 'user', content: p + (lang !== 'English' ? `\nRespond in ${lang}.` : '') }] })
     });
-    if (!r.ok) throw new Error("API Error " + r.status); const t = (await r.json()).choices[0].message.content;
-    return json ? JSON.parse(t.substring(t.indexOf('{'), t.lastIndexOf('}') + 1)) : t;
-}
+    if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error("API Error " + r.status + ": " + (err.error?.message || '')); }
+const t = (await r.json()).choices[0].message.content;
+if (!json) return t;
+const clean = t.replace(/```json|```/gi, '').trim();
+const start = clean.indexOf('{'); const end = clean.lastIndexOf('}');
+if (start === -1 || end === -1) throw new Error("Invalid JSON from API");
+return JSON.parse(clean.substring(start, end + 1));
         // ── FEATURE: ANALYZE
         // ── FEATURE: SIMPLIFY
         // ── FEATURE: QUESTIONS
@@ -1520,7 +1524,7 @@
 
             try {
                 if (act === 'analyze') {
-                let d; try { d = await callAPI(`Respond ONLY with a valid JSON object, no explanation, no markdown, no backticks. Format: {"summary":"...","riskScore":0-100,"redFlags":[{"text":"...","severity":"High/Medium/Low"}],"lawyerQuestions":["..."],"tone":"...","keyTakeaways":["..."],"obligations":{"yourSide":["..."],"theirSide":["..."]},"deadlines":["..."]}\nDoc: ${txt}`, true); } catch (e) { d = M_ANALYZE; if (!isMock) throw e; }
+                let d; try { d = await callAPI(`Respond ONLY with a valid JSON object. No markdown, no backticks, no explanation before or after. Be concise in string values. Format: {"summary":"...","riskScore":50,"redFlags":[{"text":"...","severity":"High"}],"lawyerQuestions":["...","...","...","...","..."],"tone":"...","keyTakeaways":["...","...","..."],"obligations":{"yourSide":["..."],"theirSide":["..."]},"deadlines":["..."]}\nDoc: ${txt}`, true); } catch (e) { d = M_ANALYZE; if (!isMock) throw e; }
 
                     let h = getStore('history') || []; h.unshift({ t: txt, ts: Date.now(), p: txt.substring(0, 60) + '...', s: d.riskScore, tn: d.tone, fc: d.redFlags.length });
                     if (h.length > 5) h.pop(); setStore('history', h); logAction('Analyzed Document', d.riskScore);
